@@ -27,8 +27,6 @@ class KKFormScreen extends StatefulWidget {
 
 class _KKFormScreenState extends State<KKFormScreen> {
   final ImagePicker _picker = ImagePicker();
-
-  // ================= CONTROLLER DATA KK =================
   final TextEditingController _noKKController = TextEditingController();
   final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _rtController = TextEditingController();
@@ -39,8 +37,6 @@ class _KKFormScreenState extends State<KKFormScreen> {
   final TextEditingController _provinsiController = TextEditingController();
   final TextEditingController _tglKeluarBerkasController =
       TextEditingController();
-
-  // ================= LIST ANGGOTA =================
   List<Map<String, TextEditingController>> _anggotaControllers = [];
 
   @override
@@ -48,8 +44,6 @@ class _KKFormScreenState extends State<KKFormScreen> {
     super.initState();
     _anggotaControllers.add(_buatControllerAnggota());
   }
-
-  // ================= FUNGSI BANTU =================
   Map<String, TextEditingController> _buatControllerAnggota() {
     return {
       'nama': TextEditingController(),
@@ -71,8 +65,6 @@ class _KKFormScreenState extends State<KKFormScreen> {
       'namaIbu': TextEditingController(),
     };
   }
-
-  // ================= TAMBAH + UNDO =================
   void _tambahAnggota() {
     setState(() {
       _anggotaControllers.add(_buatControllerAnggota());
@@ -94,8 +86,6 @@ class _KKFormScreenState extends State<KKFormScreen> {
       ),
     );
   }
-
-  // ================= HAPUS ANGGOTA =================
   void _hapusAnggota(int index) {
     if (_anggotaControllers.length == 1) return;
 
@@ -245,8 +235,6 @@ class _KKFormScreenState extends State<KKFormScreen> {
       ),
     );
   }
-
-  // ================= WIDGET =================
   Widget _buildTextField(
       String label, TextEditingController controller) {
     return Padding(
