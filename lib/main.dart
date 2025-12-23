@@ -1,6 +1,6 @@
-import 'dart:io'; 
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // Import library image_picker
+import 'package:image_picker/image_picker.dart';
 
 void main() => runApp(const MyApp());
 
@@ -11,8 +11,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ekstraksi KK',
-      theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: const KKFormScreen(),
     );
   }
@@ -28,51 +28,7 @@ class KKFormScreen extends StatefulWidget {
 class _KKFormScreenState extends State<KKFormScreen> {
   final ImagePicker _picker = ImagePicker();
 
-  // --- WADAH UNTUK MODEL MACHINE LEARNING ---
-  Future<void> _prosesEkstraksiML(File imageFile) async {
-    // Tampilkan loading saat proses ML berjalan
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      // TODO: Taruh kode integrasi model ML kamu di sini.
-      // Contoh simulasi hasil ekstraksi:
-      await Future.delayed(const Duration(seconds: 2)); // Simulasi waktu proses
-      
-      String hasilScanNoKK = "1234567890123456"; 
-      String hasilScanAlamat = "Jl. Contoh No. 123";
-
-      // Update isi text field dengan hasil scan
-      setState(() {
-        _noKKController.text = hasilScanNoKK;
-        _alamatController.text = hasilScanAlamat;
-        // Kamu bisa menambahkan pengisian field lainnya di sini
-      });
-
-      if (!mounted) return;
-      Navigator.pop(context); // Tutup loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ekstraksi Berhasil!')),
-      );
-    } catch (e) {
-      Navigator.pop(context);
-      print("Error saat ekstraksi: $e");
-    }
-  }
-
-  // Fungsi untuk memicu kamera/galeri
-  Future<void> _ambilGambar(ImageSource source) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
-
-    if (pickedFile != null) {
-      _prosesEkstraksiML(File(pickedFile.path));
-    }
-  }
-
-  // Controller untuk data utama KK
+  // ================= CONTROLLER DATA KK =================
   final TextEditingController _noKKController = TextEditingController();
   final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _rtController = TextEditingController();
@@ -81,179 +37,233 @@ class _KKFormScreenState extends State<KKFormScreen> {
   final TextEditingController _kecamatanController = TextEditingController();
   final TextEditingController _kabupatenController = TextEditingController();
   final TextEditingController _provinsiController = TextEditingController();
-  final TextEditingController _tglKeluarBerkasController = TextEditingController();
-  // List untuk menampung controller setiap anggota keluarga
+  final TextEditingController _tglKeluarBerkasController =
+      TextEditingController();
+
+  // ================= LIST ANGGOTA =================
   List<Map<String, TextEditingController>> _anggotaControllers = [];
 
   @override
   void initState() {
     super.initState();
-    // Menambah satu anggota keluarga pertama secara default
-    _tambahAnggota();
+    _anggotaControllers.add(_buatControllerAnggota());
   }
 
+  // ================= FUNGSI BANTU =================
+  Map<String, TextEditingController> _buatControllerAnggota() {
+    return {
+      'nama': TextEditingController(),
+      'nik': TextEditingController(),
+      'jenisKelamin': TextEditingController(),
+      'tempatLahir': TextEditingController(),
+      'tanggalLahir': TextEditingController(),
+      'agama': TextEditingController(),
+      'pendidikan': TextEditingController(),
+      'pekerjaan': TextEditingController(),
+      'golonganDarah': TextEditingController(),
+      'statusPerkawinan': TextEditingController(),
+      'tanggalPerkawinan': TextEditingController(),
+      'hubungan': TextEditingController(),
+      'kewarganegaraan': TextEditingController(),
+      'noPaspor': TextEditingController(),
+      'noKitap': TextEditingController(),
+      'namaAyah': TextEditingController(),
+      'namaIbu': TextEditingController(),
+    };
+  }
+
+  // ================= TAMBAH + UNDO =================
   void _tambahAnggota() {
     setState(() {
-      _anggotaControllers.add({
-        'nama': TextEditingController(),
-        'nik': TextEditingController(),
-        'jenisKelamin': TextEditingController(),
-        'tempatLahir': TextEditingController(),
-        'tanggalLahir': TextEditingController(),
-        'agama': TextEditingController(),
-        'pendidikan': TextEditingController(),
-        'pekerjaan': TextEditingController(),
-        'golonganDarah': TextEditingController(),
-        'statusPerkawinan': TextEditingController(),
-        'tanggalPerkawinan': TextEditingController(),
-        'hubungan': TextEditingController(),
-        'kewarganegaraan': TextEditingController(),
-        'noPaspor': TextEditingController(),
-        'noKitap': TextEditingController(),
-        'namaAyah': TextEditingController(),
-        'namaIbu': TextEditingController(),
-      });
+      _anggotaControllers.add(_buatControllerAnggota());
     });
-  }
 
-  void _simpanData() {
-    // Di sini logika untuk menyimpan data (misal ke database atau print ke console)
-    print("Nomor KK: ${_noKKController.text}");
-    for (var i = 0; i < _anggotaControllers.length; i++) {
-      print("Anggota ${i + 1}: ${_anggotaControllers[i]['nama']?.text}");
-    }
-    
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data Berhasil Disimpan!')),
+      SnackBar(
+        content: const Text('Anggota keluarga ditambahkan'),
+        action: SnackBarAction(
+          label: 'UNDO',
+          onPressed: () {
+            if (_anggotaControllers.length > 1) {
+              setState(() {
+                _anggotaControllers.removeLast();
+              });
+            }
+          },
+        ),
+      ),
     );
   }
 
-  @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text("Prototype Ekstraksi KK"),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.camera_alt),
-          onPressed: () => _ambilGambar(ImageSource.camera),
-        ),
-        IconButton(
-          icon: const Icon(Icons.photo_library),
-          onPressed: () => _ambilGambar(ImageSource.gallery),
-        ),
-      ],
-    ),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Menjaga teks tetap di kiri
-        children: [
-          // 1. Banner Petunjuk
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text("Gunakan tombol kamera di atas untuk scan KK secara otomatis."),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 24),
+  // ================= HAPUS ANGGOTA =================
+  void _hapusAnggota(int index) {
+    if (_anggotaControllers.length == 1) return;
 
-          // 2. Form Data Utama Kartu Keluarga
-          const Text("Data Kartu Keluarga", 
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          const SizedBox(height: 10),
-          
-          _buildTextField("No KK", _noKKController),
-          _buildTextField("Alamat", _alamatController),
-          
-          // RT dan RW bersampingan (Opsional: Menggunakan Row)
-          Row(
-            children: [
-              Expanded(child: _buildTextField("RT", _rtController)),
-              const SizedBox(width: 10),
-              Expanded(child: _buildTextField("RW", _rwController)),
-            ],
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Hapus Anggota"),
+        content:
+            const Text("Yakin ingin menghapus anggota keluarga ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal"),
           ),
-          
-          _buildTextField("Kelurahan", _kelurahanController),
-          _buildTextField("Kecamatan", _kecamatanController),
-          _buildTextField("Kabupaten", _kabupatenController),
-          _buildTextField("Provinsi", _provinsiController),
-          _buildTextField("Tanggal Keluar Berkas", _tglKeluarBerkasController),
-          
-          const Divider(height: 40, thickness: 2),
-          
-          // 3. Form Anggota Keluarga (Dinamis)
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _anggotaControllers.length,
-            itemBuilder: (context, index) {
-              return _buildAnggotaForm(index);
-            },
-          ),
-          
-          const SizedBox(height: 20),
-          
-          // 4. Tombol Aksi
-          ElevatedButton.icon(
-            onPressed: _tambahAnggota,
-            icon: const Icon(Icons.add),
-            label: const Text("Tambah Anggota Keluarga"),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              side: const BorderSide(color: Colors.grey),
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
           ElevatedButton(
-            onPressed: _simpanData,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
-            ),
-            child: const Text("SIMPAN DATA SEKARANG", 
-              style: TextStyle(fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              setState(() {
+                _anggotaControllers.removeAt(index);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Hapus"),
           ),
-          
-          const SizedBox(height: 30), // Padding bawah agar tidak mepet
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
-  // Widget pendukung untuk membuat TextField agar kode lebih rapi
-  Widget _buildTextField(String label, TextEditingController controller) {
+  // ================= AMBIL GAMBAR =================
+  Future<void> _ambilGambar(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(source: source);
+    if (pickedFile == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    setState(() {
+      _noKKController.text = "1234567890123456";
+      _alamatController.text = "Jl. Contoh No. 123";
+    });
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Ekstraksi berhasil")),
+    );
+  }
+
+  // ================= SIMPAN DATA =================
+  void _simpanData() {
+    print("No KK: ${_noKKController.text}");
+    for (int i = 0; i < _anggotaControllers.length; i++) {
+      print("Anggota ${i + 1}: ${_anggotaControllers[i]['nama']?.text}");
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Data berhasil disimpan")),
+    );
+  }
+
+  // ================= UI =================
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Prototype Ekstraksi KK"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () => _ambilGambar(ImageSource.camera),
+          ),
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            onPressed: () => _ambilGambar(ImageSource.gallery),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Data Kartu Keluarga",
+                style:
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            _buildTextField("No KK", _noKKController),
+            _buildTextField("Alamat", _alamatController),
+
+            Row(
+              children: [
+                Expanded(child: _buildTextField("RT", _rtController)),
+                const SizedBox(width: 10),
+                Expanded(child: _buildTextField("RW", _rwController)),
+              ],
+            ),
+
+            _buildTextField("Kelurahan", _kelurahanController),
+            _buildTextField("Kecamatan", _kecamatanController),
+            _buildTextField("Kabupaten", _kabupatenController),
+            _buildTextField("Provinsi", _provinsiController),
+            _buildTextField(
+                "Tanggal Keluar Berkas", _tglKeluarBerkasController),
+
+            const Divider(height: 40, thickness: 2),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _anggotaControllers.length,
+              itemBuilder: (context, index) =>
+                  _buildAnggotaForm(index),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              onPressed: _tambahAnggota,
+              icon: const Icon(Icons.add),
+              label: const Text("Tambah Anggota Keluarga"),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: _simpanData,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                backgroundColor: Colors.green,
+              ),
+              child: const Text("SIMPAN DATA",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= WIDGET =================
+  Widget _buildTextField(
+      String label, TextEditingController controller) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(label),
           TextField(
             controller: controller,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.grey[200],
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
         ],
@@ -261,37 +271,54 @@ Widget build(BuildContext context) {
     );
   }
 
-  // Widget untuk form anggota keluarga
   Widget _buildAnggotaForm(int index) {
     final anggota = _anggotaControllers[index];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Anggota Keluarga ${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        // Gunakan operator ?? untuk memberikan controller baru jika key tidak ditemukan (safety)
-        _buildTextField("Nama Lengkap", anggota['nama'] ?? TextEditingController()),
-        _buildTextField("NIK", anggota['nik'] ?? TextEditingController()),
-        _buildTextField("Jenis Kelamin", anggota['jenisKelamin'] ?? TextEditingController()),
-        _buildTextField("Tempat Lahir", anggota['tempatLahir'] ?? TextEditingController()),
-        _buildTextField("Tanggal Lahir", anggota['tanggalLahir'] ?? TextEditingController()),
-        _buildTextField("Agama", anggota['agama'] ?? TextEditingController()),
-        _buildTextField("Pendidikan", anggota['pendidikan'] ?? TextEditingController()),
-        _buildTextField("Pekerjaan", anggota['pekerjaan'] ?? TextEditingController()),
-        _buildTextField("Golongan Darah", anggota['golonganDarah'] ?? TextEditingController()),
-        _buildTextField("Status Perkawinan", anggota['statusPerkawinan'] ?? TextEditingController()),
-        _buildTextField("Tanggal Perkawinan", anggota['tanggalPerkawinan'] ?? TextEditingController()),
-        _buildTextField("Status Hubungan dalam Keluarga", anggota['hubungan'] ?? TextEditingController()),
-        _buildTextField("Kewarganegaraan", anggota['kewarganegaraan'] ?? TextEditingController()),
         Row(
-            children: [
-              Expanded(child: _buildTextField("No Paspor", anggota['noPaspor'] ?? TextEditingController())),
-              const SizedBox(width: 10),
-              Expanded(child: _buildTextField("No KITAP", anggota['noKitap'] ?? TextEditingController())),
-            ],
-          ),
-        _buildTextField("No KITAP", anggota['noKitap'] ?? TextEditingController()),
-        _buildTextField("Nama Ayah", anggota['namaAyah'] ?? TextEditingController()),
-        _buildTextField("Nama Ibu", anggota['namaIbu'] ?? TextEditingController()),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Anggota Keluarga ${index + 1}",
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
+            IconButton(
+              icon:
+                  const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _hapusAnggota(index),
+            ),
+          ],
+        ),
+        _buildTextField("Nama", anggota['nama']!),
+        _buildTextField("NIK", anggota['nik']!),
+        _buildTextField("Jenis Kelamin", anggota['jenisKelamin']!),
+        _buildTextField("Tempat Lahir", anggota['tempatLahir']!),
+        _buildTextField("Tanggal Lahir", anggota['tanggalLahir']!),
+        _buildTextField("Agama", anggota['agama']!),
+        _buildTextField("Pendidikan", anggota['pendidikan']!),
+        _buildTextField("Pekerjaan", anggota['pekerjaan']!),
+        _buildTextField("Golongan Darah", anggota['golonganDarah']!),
+        _buildTextField(
+            "Status Perkawinan", anggota['statusPerkawinan']!),
+        _buildTextField(
+            "Tanggal Perkawinan", anggota['tanggalPerkawinan']!),
+        _buildTextField("Hubungan", anggota['hubungan']!),
+        _buildTextField(
+            "Kewarganegaraan", anggota['kewarganegaraan']!),
+        Row(
+          children: [
+            Expanded(
+                child:
+                    _buildTextField("No Paspor", anggota['noPaspor']!)),
+            const SizedBox(width: 10),
+            Expanded(
+                child:
+                    _buildTextField("No KITAP", anggota['noKitap']!)),
+          ],
+        ),
+        _buildTextField("Nama Ayah", anggota['namaAyah']!),
+        _buildTextField("Nama Ibu", anggota['namaIbu']!),
         const SizedBox(height: 20),
       ],
     );
